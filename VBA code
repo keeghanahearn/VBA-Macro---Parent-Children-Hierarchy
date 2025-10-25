@@ -1,0 +1,40 @@
+Sub CopyParentsAndChildren()
+    Dim wsParents As Worksheet, wsChildren As Worksheet, wsDest As Worksheet
+    Dim parentText As String
+    Dim lastParentRow As Long, lastChildRow As Long
+    Dim i As Long, j As Long
+    Dim destRow As Long
+    
+    Set wsParents = ThisWorkbook.Sheets("Parents")
+    Set wsChildren = ThisWorkbook.Sheets("Parents and Children")
+    Set wsDest = ThisWorkbook.Sheets("Destination")
+    
+    lastParentRow = wsParents.Cells(wsParents.Rows.Count, "A").End(xlUp).Row
+    lastChildRow = wsChildren.Cells(wsChildren.Rows.Count, "A").End(xlUp).Row
+    destRow = 1
+    
+    wsDest.Cells.Clear
+    
+    ' Loop through each parent row
+    For i = 1 To lastParentRow
+        parentText = wsParents.Cells(i, 1).Value
+        ' Copy parent row to destination
+        wsParents.Rows(i).Copy Destination:=wsDest.Rows(destRow)
+        destRow = destRow + 1
+        
+        ' Search for child rows in Sanity Check
+        For j = 1 To lastChildRow
+            Dim childText As String
+            childText = wsChildren.Cells(j, 1).Value
+            
+            If Left(childText, Len(parentText) + 1) = parentText & "|" Then
+                If Len(childText) > Len(parentText) + 1 Then
+                    wsChildren.Rows(j).Copy Destination:=wsDest.Rows(destRow)
+                    destRow = destRow + 1
+                End If
+            End If
+        Next j
+    Next i
+    
+    MsgBox "All parent and child rows copied to 'Dest'.", vbInformation
+End Sub
